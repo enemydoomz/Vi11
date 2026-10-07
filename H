@@ -1,0 +1,318 @@
+from pathlib import Path
+
+html = r'''<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="AccessVoice Hospital Management System">
+<title>AccessVoice Hospital System</title>
+<style>
+:root{
+  --bg:#f4f7fb;--card:#fff;--text:#172033;--muted:#6b7280;
+  --primary:#2563eb;--primary2:#1d4ed8;--danger:#dc2626;--border:#e5e7eb;
+  --success:#16a34a;--shadow:0 10px 30px rgba(15,23,42,.08);
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text)}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.hidden{display:none!important}
+.login-wrap{min-height:100vh;display:grid;place-items:center;padding:20px;background:linear-gradient(135deg,#eff6ff,#f8fafc)}
+.login-card{width:min(430px,100%);background:#fff;border:1px solid var(--border);border-radius:20px;padding:32px;box-shadow:var(--shadow)}
+.logo{width:58px;height:58px;border-radius:16px;background:var(--primary);color:#fff;display:grid;place-items:center;font-size:26px;font-weight:800;margin-bottom:18px}
+h1,h2,h3{margin-top:0}
+.muted{color:var(--muted)}
+.field{margin:15px 0}
+.field label{display:block;font-size:14px;font-weight:600;margin-bottom:7px}
+.field input,.field select,.field textarea{width:100%;padding:12px 13px;border:1px solid #d1d5db;border-radius:10px;outline:none;background:#fff}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.btn{border:0;border-radius:10px;padding:11px 16px;font-weight:700}
+.btn-primary{background:var(--primary);color:#fff}.btn-primary:hover{background:var(--primary2)}
+.btn-secondary{background:#eef2ff;color:#1e40af}.btn-danger{background:#fee2e2;color:#991b1b}
+.btn-light{background:#f3f4f6;color:#374151}
+.error{color:var(--danger);font-size:14px;min-height:20px;margin:8px 0}
+.app{min-height:100vh;display:flex}
+.sidebar{width:250px;background:#111827;color:#fff;padding:22px;position:fixed;inset:0 auto 0 0;z-index:10}
+.brand{font-size:20px;font-weight:800;margin-bottom:30px}
+.nav button{width:100%;text-align:left;background:transparent;color:#d1d5db;border:0;padding:12px;border-radius:9px;margin:3px 0}
+.nav button:hover,.nav button.active{background:#1f2937;color:#fff}
+.main{margin-left:250px;width:calc(100% - 250px);padding:24px}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:24px}
+.top-actions{display:flex;gap:8px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;box-shadow:0 3px 12px rgba(15,23,42,.03)}
+.stat-value{font-size:30px;font-weight:800;margin-top:8px}
+.section{margin-top:20px}
+.table-wrap{overflow:auto;background:#fff;border:1px solid var(--border);border-radius:14px}
+table{width:100%;border-collapse:collapse;min-width:700px}
+th,td{text-align:left;padding:13px 15px;border-bottom:1px solid var(--border);font-size:14px}
+th{background:#f8fafc;color:#475569}
+.badge{display:inline-block;padding:4px 9px;border-radius:999px;font-size:12px;font-weight:700}
+.badge-green{background:#dcfce7;color:#166534}.badge-blue{background:#dbeafe;color:#1e40af}.badge-yellow{background:#fef3c7;color:#92400e}
+.page{display:none}.page.active{display:block}
+.modal-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.5);display:grid;place-items:center;padding:20px;z-index:30}
+.modal{background:#fff;border-radius:16px;width:min(560px,100%);padding:24px;max-height:90vh;overflow:auto}
+.modal-head{display:flex;justify-content:space-between;align-items:center}
+.close{border:0;background:#f3f4f6;border-radius:8px;width:36px;height:36px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-grid .full{grid-column:1/-1}
+.empty{text-align:center;padding:35px;color:var(--muted)}
+.notice{padding:12px 14px;border-radius:10px;background:#eff6ff;color:#1e40af;font-size:14px;margin-top:15px}
+@media(max-width:900px){
+ .sidebar{width:210px}.main{margin-left:210px;width:calc(100% - 210px)}.grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:650px){
+ .sidebar{position:static;width:100%;height:auto}.app{display:block}.main{margin:0;width:100%;padding:16px}.nav{display:grid;grid-template-columns:repeat(2,1fr);gap:4px}.grid{grid-template-columns:1fr}.topbar{align-items:flex-start;flex-direction:column}.form-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div id="loginView" class="login-wrap">
+  <div class="login-card">
+    <div class="logo">+</div>
+    <h1>AccessVoice</h1>
+    <p class="muted">Hospital Management System</p>
+    <form id="loginForm">
+      <div class="field">
+        <label for="username">Username</label>
+        <input id="username" autocomplete="username" required placeholder="Admin">
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input id="password" type="password" autocomplete="current-password" required placeholder="Password">
+      </div>
+      <div id="loginError" class="error"></div>
+      <button class="btn btn-primary" style="width:100%">Sign in</button>
+    </form>
+    <div class="notice">Demo login: <strong>admin</strong> / <strong>v11$$</strong></div>
+  </div>
+</div>
+
+<div id="appView" class="app hidden">
+  <aside class="sidebar">
+    <div class="brand">AccessVoice</div>
+    <div class="nav">
+      <button class="active" data-page="dashboard">Dashboard</button>
+      <button data-page="patients">Patients</button>
+      <button data-page="appointments">Appointments</button>
+      <button data-page="records">Medical Records</button>
+      <button data-page="settings">Settings</button>
+      <button id="logoutBtn">Log out</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <h2 id="pageTitle">Dashboard</h2>
+        <div class="muted">Hospital management overview</div>
+      </div>
+      <div class="top-actions">
+        <button class="btn btn-primary" id="quickAdd">+ Add Patient</button>
+      </div>
+    </div>
+
+    <section id="dashboard" class="page active">
+      <div class="grid">
+        <div class="card"><div class="muted">Patients</div><div id="statPatients" class="stat-value">0</div></div>
+        <div class="card"><div class="muted">Appointments</div><div id="statAppointments" class="stat-value">0</div></div>
+        <div class="card"><div class="muted">Medical Records</div><div id="statRecords" class="stat-value">0</div></div>
+        <div class="card"><div class="muted">Today</div><div id="statToday" class="stat-value">0</div></div>
+      </div>
+      <div class="section card">
+        <h3>Recent Patients</h3>
+        <div id="recentPatients"></div>
+      </div>
+    </section>
+
+    <section id="patients" class="page">
+      <div class="card">
+        <div class="topbar">
+          <div><h3>Patients</h3><div class="muted">Manage patient information</div></div>
+          <button class="btn btn-primary" onclick="openPatientModal()">+ Add Patient</button>
+        </div>
+        <div class="table-wrap"><table><thead><tr><th>Name</th><th>Age</th><th>Phone</th><th>Gender</th><th>Actions</th></tr></thead><tbody id="patientsBody"></tbody></table></div>
+      </div>
+    </section>
+
+    <section id="appointments" class="page">
+      <div class="card">
+        <div class="topbar">
+          <div><h3>Appointments</h3><div class="muted">Scheduled hospital visits</div></div>
+          <button class="btn btn-primary" onclick="openAppointmentModal()">+ Add Appointment</button>
+        </div>
+        <div class="table-wrap"><table><thead><tr><th>Patient</th><th>Date</th><th>Time</th><th>Doctor</th><th>Status</th><th>Actions</th></tr></thead><tbody id="appointmentsBody"></tbody></table></div>
+      </div>
+    </section>
+
+    <section id="records" class="page">
+      <div class="card">
+        <div class="topbar">
+          <div><h3>Medical Records</h3><div class="muted">Clinical notes and diagnoses</div></div>
+          <button class="btn btn-primary" onclick="openRecordModal()">+ Add Record</button>
+        </div>
+        <div class="table-wrap"><table><thead><tr><th>Patient</th><th>Date</th><th>Diagnosis</th><th>Doctor</th><th>Actions</th></tr></thead><tbody id="recordsBody"></tbody></table></div>
+      </div>
+    </section>
+
+    <section id="settings" class="page">
+      <div class="card">
+        <h3>Settings</h3>
+        <p class="muted">Local application settings.</p>
+        <button class="btn btn-danger" onclick="clearAllData()">Delete all local demo data</button>
+        <div class="notice">This GitHub Pages version stores data in this browser only. It is not a secure server/database.</div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="modalRoot"></div>
+
+<script>
+const KEY="accessvoice_data_v1";
+let data=JSON.parse(localStorage.getItem(KEY)||'null')||{
+  patients:[
+    {id:1,name:"Example Patient",age:30,phone:"0000000000",gender:"Male"}
+  ],
+  appointments:[],
+  records:[]
+};
+
+function save(){localStorage.setItem(KEY,JSON.stringify(data));renderAll()}
+function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+function today(){return new Date().toISOString().slice(0,10)}
+
+document.getElementById("loginForm").addEventListener("submit",e=>{
+  e.preventDefault();
+  const u=document.getElementById("username").value.trim().toLowerCase();
+  const p=document.getElementById("password").value;
+  if(u==="admin"&&p==="v11$$"){
+    sessionStorage.setItem("av_logged","1");
+    showApp();
+  }else document.getElementById("loginError").textContent="Invalid username or password.";
+});
+document.getElementById("logoutBtn").onclick=()=>{
+  sessionStorage.removeItem("av_logged"); location.reload();
+};
+function showApp(){document.getElementById("loginView").classList.add("hidden");document.getElementById("appView").classList.remove("hidden");renderAll()}
+if(sessionStorage.getItem("av_logged")==="1")showApp();
+
+document.querySelectorAll(".nav button[data-page]").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active"));
+  b.classList.add("active");
+  document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));
+  document.getElementById(b.dataset.page).classList.add("active");
+  document.getElementById("pageTitle").textContent=b.textContent;
+});
+document.getElementById("quickAdd").onclick=()=>openPatientModal();
+
+function renderAll(){
+  document.getElementById("statPatients").textContent=data.patients.length;
+  document.getElementById("statAppointments").textContent=data.appointments.length;
+  document.getElementById("statRecords").textContent=data.records.length;
+  document.getElementById("statToday").textContent=data.appointments.filter(a=>a.date===today()).length;
+
+  const recent=data.patients.slice(-5).reverse();
+  document.getElementById("recentPatients").innerHTML=recent.length?`
+    <div class="table-wrap"><table><thead><tr><th>Name</th><th>Age</th><th>Phone</th></tr></thead>
+    <tbody>${recent.map(p=>`<tr><td>${esc(p.name)}</td><td>${esc(p.age)}</td><td>${esc(p.phone)}</td></tr>`).join("")}</tbody></table></div>`:
+    `<div class="empty">No patients yet.</div>`;
+
+  document.getElementById("patientsBody").innerHTML=data.patients.length?data.patients.map(p=>`
+    <tr><td><strong>${esc(p.name)}</strong></td><td>${esc(p.age)}</td><td>${esc(p.phone)}</td><td>${esc(p.gender)}</td>
+    <td><button class="btn btn-light" onclick="deletePatient(${p.id})">Delete</button></td></tr>`).join(""):`<tr><td colspan="5" class="empty">No patients.</td></tr>`;
+
+  document.getElementById("appointmentsBody").innerHTML=data.appointments.length?data.appointments.map(a=>`
+    <tr><td>${esc(patientName(a.patientId))}</td><td>${esc(a.date)}</td><td>${esc(a.time)}</td><td>${esc(a.doctor)}</td>
+    <td><span class="badge badge-blue">${esc(a.status)}</span></td>
+    <td><button class="btn btn-light" onclick="deleteAppointment(${a.id})">Delete</button></td></tr>`).join(""):`<tr><td colspan="6" class="empty">No appointments.</td></tr>`;
+
+  document.getElementById("recordsBody").innerHTML=data.records.length?data.records.map(r=>`
+    <tr><td>${esc(patientName(r.patientId))}</td><td>${esc(r.date)}</td><td>${esc(r.diagnosis)}</td><td>${esc(r.doctor)}</td>
+    <td><button class="btn btn-light" onclick="deleteRecord(${r.id})">Delete</button></td></tr>`).join(""):`<tr><td colspan="5" class="empty">No records.</td></tr>`;
+}
+function patientName(id){return data.patients.find(p=>p.id==id)?.name||"Unknown patient"}
+function nextId(arr){return arr.length?Math.max(...arr.map(x=>x.id))+1:1}
+
+function modal(title,body){
+  document.getElementById("modalRoot").innerHTML=`<div class="modal-backdrop" onclick="if(event.target===this)closeModal()">
+  <div class="modal"><div class="modal-head"><h3>${title}</h3><button class="close" onclick="closeModal()">×</button></div>${body}</div></div>`;
+}
+function closeModal(){document.getElementById("modalRoot").innerHTML=""}
+
+function openPatientModal(){
+ modal("Add Patient",`<form onsubmit="addPatient(event)">
+ <div class="form-grid">
+ <div class="field full"><label>Name</label><input id="pName" required></div>
+ <div class="field"><label>Age</label><input id="pAge" type="number" min="0" required></div>
+ <div class="field"><label>Gender</label><select id="pGender"><option>Male</option><option>Female</option><option>Other</option></select></div>
+ <div class="field full"><label>Phone</label><input id="pPhone" required></div>
+ </div><button class="btn btn-primary">Save Patient</button></form>`);
+}
+function addPatient(e){
+ e.preventDefault();
+ data.patients.push({id:nextId(data.patients),name:pName.value.trim(),age:Number(pAge.value),gender:pGender.value,phone:pPhone.value.trim()});
+ save();closeModal();
+}
+function deletePatient(id){
+ if(confirm("Delete this patient?")){data.patients=data.patients.filter(p=>p.id!==id);save()}
+}
+
+function patientOptions(){
+ return data.patients.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join("");
+}
+function openAppointmentModal(){
+ if(!data.patients.length){alert("Add a patient first.");return}
+ modal("Add Appointment",`<form onsubmit="addAppointment(event)">
+ <div class="form-grid">
+ <div class="field full"><label>Patient</label><select id="aPatient" required>${patientOptions()}</select></div>
+ <div class="field"><label>Date</label><input id="aDate" type="date" value="${today()}" required></div>
+ <div class="field"><label>Time</label><input id="aTime" type="time" required></div>
+ <div class="field"><label>Doctor</label><input id="aDoctor" required></div>
+ <div class="field"><label>Status</label><select id="aStatus"><option>Scheduled</option><option>Completed</option><option>Cancelled</option></select></div>
+ </div><button class="btn btn-primary">Save Appointment</button></form>`);
+}
+function addAppointment(e){
+ e.preventDefault();
+ data.appointments.push({id:nextId(data.appointments),patientId:Number(aPatient.value),date:aDate.value,time:aTime.value,doctor:aDoctor.value.trim(),status:aStatus.value});
+ save();closeModal();
+}
+function deleteAppointment(id){
+ if(confirm("Delete this appointment?")){data.appointments=data.appointments.filter(a=>a.id!==id);save()}
+}
+
+function openRecordModal(){
+ if(!data.patients.length){alert("Add a patient first.");return}
+ modal("Add Medical Record",`<form onsubmit="addRecord(event)">
+ <div class="form-grid">
+ <div class="field full"><label>Patient</label><select id="rPatient" required>${patientOptions()}</select></div>
+ <div class="field"><label>Date</label><input id="rDate" type="date" value="${today()}" required></div>
+ <div class="field"><label>Doctor</label><input id="rDoctor" required></div>
+ <div class="field full"><label>Diagnosis</label><input id="rDiagnosis" required></div>
+ <div class="field full"><label>Notes</label><textarea id="rNotes" rows="4"></textarea></div>
+ </div><button class="btn btn-primary">Save Record</button></form>`);
+}
+function addRecord(e){
+ e.preventDefault();
+ data.records.push({id:nextId(data.records),patientId:Number(rPatient.value),date:rDate.value,doctor:rDoctor.value.trim(),diagnosis:rDiagnosis.value.trim(),notes:rNotes.value.trim()});
+ save();closeModal();
+}
+function deleteRecord(id){
+ if(confirm("Delete this medical record?")){data.records=data.records.filter(r=>r.id!==id);save()}
+}
+function clearAllData(){
+ if(confirm("Delete all local demo data?")){
+  data={patients:[],appointments:[],records:[]};save();
+ }
+}
+renderAll();
+</script>
+</body>
+</html>
+'''
+
+path = Path("/mnt/data/accessvoice_index.html")
+path.write_text(html, encoding="utf-8")
+print(f"Created: {path}")
